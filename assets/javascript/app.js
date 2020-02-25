@@ -16,3 +16,23 @@
     console.log(snapshot.val());
     
   });
+
+  var trainName = "";
+  var destination = "";
+  var firstTime = "";
+  var frequency = "";
+
+  $("#add-train").on("click", function() {
+    trainName = $("#train-name").val().trim();
+    destination = $("#destination").val().trim();
+    firstTime = $("#first-time").val().trim();
+    frequency = $("#frequency").val().trim();
+
+    firebase.database().ref().set({
+      trainName: trainName,
+      destination: destination,
+      firstTime: firstTime,
+      frequency: frequency
+    })
+
+  })
