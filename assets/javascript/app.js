@@ -12,11 +12,6 @@
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
 
-  firebase.database().ref().on("value",function(snapshot) {
-    console.log(snapshot.val());
-    
-  });
-
   var trainName = "";
   var destination = "";
   var firstTime = "";
@@ -28,11 +23,27 @@
     firstTime = $("#first-time").val().trim();
     frequency = $("#frequency").val().trim();
 
-    firebase.database().ref().set({
+    firebase.database().ref().push({
       trainName: trainName,
       destination: destination,
       firstTime: firstTime,
-      frequency: frequency
+      frequency: frequency,
+      // dataAdded: firebase.database.ServerValue.TIMESTAMP
     })
 
   })
+
+  firebase.database().ref().on("value",function(snapshot) {
+    console.log(snapshot.val());
+    var newTr = $("<tr>");
+    var trainTd = $("<td>").text(snapshot.val().trainName);
+    var destinationTd = $("<td>").text(snapshot.val().destination);
+    var frequencyTd = $("<td>").text(snapshot.val().frequency);
+
+    // add Td for Next Arrival
+    // add Td for minutes away
+    
+    newTr.append(trainTd, destinationTd, frequencyTd);
+    $("#train-list").append(newTr);
+
+  });
