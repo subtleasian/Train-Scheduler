@@ -17,7 +17,9 @@
   var firstTime = "";
   var frequency = "";
 
-  $("#add-train").on("click", function() {
+  $("#add-train").on("click", function(event) {
+    event.preventDefault();
+
     trainName = $("#train-name").val().trim();
     destination = $("#destination").val().trim();
     firstTime = $("#first-time").val().trim();
@@ -28,22 +30,46 @@
       destination: destination,
       firstTime: firstTime,
       frequency: frequency,
-      // dataAdded: firebase.database.ServerValue.TIMESTAMP
-    })
+    });
+
+    $("#train-name").val("");
+    $("#destination").val("");
+    $("#first-time").val("");
+    $("#frequency").val("");
+
 
   })
 
-  firebase.database().ref().on("value",function(snapshot) {
+  firebase.database().ref().on("child_added",function(snapshot) {
     console.log(snapshot.val());
+
+    var firstTime = snapshot.val().firstTime;
+    var arrTime = firstTime.split(":");
+    var trainTime = moment().hours(arrTime[0]).minutes(arrTime[1]);
+    var maxMoment = moment.max(moment(), trainTime);
+    var tArrival; 
+    var tMinutes;
+    
+
+    if (maxMoment === trainTime) {
+      tArrival = trainTime.format("hh:mm A");
+      tMinutes = trainTime.diff(moment(), "minutes");
+    } else {
+      var diffTimes = moment().diff(trainTime, "minutes");
+      var tRemainder = diffTimes % snapshot.val().frequency;
+      tMinutes = snapshot.val().frequency - tRemainder;
+      tArrival = moment().add(tMinutes, "m").format("hh:mm A");
+    }
+
+
     var newTr = $("<tr>");
     var trainTd = $("<td>").text(snapshot.val().trainName);
     var destinationTd = $("<td>").text(snapshot.val().destination);
     var frequencyTd = $("<td>").text(snapshot.val().frequency);
-
-    // add Td for Next Arrival
-    // add Td for minutes away
+    var arrTd = $("<td>").text(tArrival);
+    var minAwayTd = $("<td>").text(tMinutes);
     
-    newTr.append(trainTd, destinationTd, frequencyTd);
+    newTr.append(trainTd, destinationTd, frequencyTd, arrTd, minAwayTd);
     $("#train-list").append(newTr);
 
   });
